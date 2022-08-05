@@ -74,9 +74,8 @@ export default function BanksListScreen() {
         <Heading fontSize="xl" p="4" pb="3">
           Lista de Bancos
         </Heading>
-        <Text>{dataList}</Text>
         <FlatList
-          data={dataList}
+          data={banks}
           keyExtractor={(item) => item.bankName}
           renderItem={({ item }) => (
             <Box
