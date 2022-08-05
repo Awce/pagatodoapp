@@ -10,89 +10,73 @@ import {
   Spacer,
   Text,
   Center,
-  NativeBaseProvider,
 } from "native-base";
+import Logo from "../components/Logo";
 import Loading from "../components/Loading";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function BanksListScreen() {
   const [banks, setBanks] = useState([]);
+  const [dataList, setDataList] = useState([]);
   const [recovered, setRecovered] = useState(false);
 
-  // useEffect(() => {
-  //   fetch("https://api.jsonbin.io/v3/b/604006e581087a6a8b95b784")
-  //     .then((response) => {
-  //       return response.json();
-  //     })
-  //     .then((banks) => {
-  //       setBanks(banks.record);
-  //       setRecovered(true);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // }, []);
+  useEffect(() => {
+    fetch("https://api.jsonbin.io/v3/b/604006e581087a6a8b95b784")
+      .then((response) => {
+        return response.json();
+      })
+      .then((banks) => {
+        setBanks(banks.record);
+        setRecovered(true);
+        setDataList([...banks, dataList]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
-  const data = [
-    {
-      bankName: "Paga Todo",
-      description: "Banco Paga Todo es Para Todos",
-      age: 10,
-      url: "https://public-liarla.s3.us-east-2.amazonaws.com/ico_pagatodo.png",
-    },
-    {
-      bankName: "BBVA Bancomer",
-      description: "BBVA Bancomer Creando Oportunidades",
-      age: 10,
-      url: "https://public-liarla.s3.us-east-2.amazonaws.com/ico_bancomer.png",
-    },
-    {
-      bankName: "Banamex",
-      description: "Banamex lo mejor de México",
-      age: 10,
-      url: "https://public-liarla.s3.us-east-2.amazonaws.com/ico_banamex.png",
-    },
-    {
-      bankName: "Santander",
-      description: "Santander sé parte de la banca digital",
-      age: 10,
-      url: "https://public-liarla.s3.us-east-2.amazonaws.com/ico_santander.png",
-    },
-    {
-      bankName: "Scotiabank",
-      description: "Scotiabank el Banco de Nueva Escocia",
-      age: 10,
-      url: "https://public-liarla.s3.us-east-2.amazonaws.com/ico_scotiabank.png",
-    },
-  ];
+  useEffect(() => {
+    storeData();
+    return () => {
+      getData();
+    };
+  }, []);
 
-  const storeData = async (data) => {
+  // Guardar en Asyncstorage
+
+  const storeData = async (dataList) => {
     try {
-      const jsonValue = JSON.stringify(data);
+      const jsonValue = JSON.stringify(dataList);
       await AsyncStorage.setItem("@storage_Key", jsonValue);
     } catch (err) {
       console.log(err);
     }
   };
 
-  if (recovered) return <Loading />;
+  const getData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("@storage_Key");
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  if (!recovered) return <Loading />;
 
   return (
     <Center flex={1} px="3" py="16">
       <Box>
         <Center>
-          <Image
-            source={require("../assets/pagatodologo.png")}
-            alt="Alternate Text"
-            size="xl"
-          />
+          <Logo />
         </Center>
 
         <Heading fontSize="xl" p="4" pb="3">
           Lista de Bancos
         </Heading>
+        <Text>{dataList}</Text>
         <FlatList
-          data={data}
+          data={dataList}
           keyExtractor={(item) => item.bankName}
           renderItem={({ item }) => (
             <Box
